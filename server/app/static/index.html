@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>ROVOps — Remote Pilot</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <section id="login-view" class="login-view">
+      <form id="login-form" class="login-card" autocomplete="on">
+        <div class="brand-mark">ROV<span>Ops</span></div>
+        <p class="muted">Remote teleoperation console</p>
+
+        <label>
+          <span>Server</span>
+          <input id="server-url" name="server" type="url" placeholder="http://localhost:8080" />
+        </label>
+        <label>
+          <span>User</span>
+          <input id="username" name="username" type="text" value="demo" autocomplete="username" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input id="password" name="password" type="password" value="demo" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="primary">Sign in</button>
+        <p id="login-error" class="error" role="alert"></p>
+        <p class="hint">
+          Development defaults: <code>demo/demo</code> or <code>admin/admin</code>. Change them before exposing the server.
+        </p>
+      </form>
+    </section>
+
+    <div id="app-view" class="app-view" hidden>
+      <header class="topbar">
+        <div class="brand-mark small">ROV<span>Ops</span></div>
+        <div class="topbar-status">
+          <span id="net-pill" class="pill offline">disconnected</span>
+          <span id="latency" class="muted mono">—</span>
+        </div>
+        <div class="topbar-user">
+          <span id="user-label" class="muted"></span>
+          <button id="logout" class="ghost" type="button">Sign out</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="panel vehicle-panel">
+          <h2>Vehicles</h2>
+          <div id="vehicle-list" class="vehicle-list"></div>
+          <div class="divider"></div>
+          <div id="session-info" class="session-info muted">Select a vehicle to open a session.</div>
+          <div class="divider"></div>
+          <h3>Pilots</h3>
+          <ul id="pilot-list" class="pilot-list"></ul>
+        </aside>
+
+        <section class="stage">
+          <div class="video-shell">
+            <video id="video" autoplay muted playsinline></video>
+            <div id="video-empty" class="video-empty">
+              <div class="video-empty-icon">◉</div>
+              <div>No video stream</div>
+              <small>Configure <code>VIDEO_WHEP_URL</code> on the agent.</small>
+            </div>
+            <div class="video-hud">
+              <span id="hud-mode" class="hud-chip">MODE —</span>
+              <span id="hud-armed" class="hud-chip">DISARMED</span>
+              <span id="hud-estop" class="hud-chip estop" hidden>E-STOP</span>
+            </div>
+          </div>
+
+          <div class="telemetry-grid">
+            <div class="telemetry-card">
+              <span class="label">Depth</span>
+              <span id="t-depth" class="value mono">—</span>
+            </div>
+            <div class="telemetry-card">
+              <span class="label">Heading</span>
+              <span id="t-heading" class="value mono">—</span>
+            </div>
+            <div class="telemetry-card">
+              <span class="label">Battery</span>
+              <span id="t-battery" class="value mono">—</span>
+            </div>
+            <div class="telemetry-card">
+              <span class="label">Attitude</span>
+              <span id="t-attitude" class="value mono">—</span>
+            </div>
+            <div class="telemetry-card">
+              <span class="label">Throttle</span>
+              <span id="t-throttle" class="value mono">—</span>
+            </div>
+            <div class="telemetry-card">
+              <span class="label">Vehicle link</span>
+              <span id="t-link" class="value mono">—</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel control-panel">
+          <button id="estop" class="estop" type="button">E-STOP</button>
+          <button id="estop-reset" class="ghost danger-text" type="button" disabled>Reset E-Stop</button>
+
+          <div class="divider"></div>
+
+          <div class="lease-row">
+            <span id="lease-pill" class="pill">no control</span>
+            <button id="take-control" class="primary small" type="button" disabled>Take control</button>
+            <button id="release-control" class="ghost small" type="button" disabled>Release</button>
+          </div>
+
+          <div class="arm-row">
+            <button id="arm" class="warn" type="button" disabled>Arm</button>
+            <button id="disarm" class="ghost" type="button" disabled>Disarm</button>
+          </div>
+
+          <label class="mode-select">
+            <span>Flight mode</span>
+            <select id="mode" disabled>
+              <option value="STABILIZE">STABILIZE</option>
+              <option value="ALT_HOLD">ALT_HOLD</option>
+              <option value="MANUAL">MANUAL</option>
+              <option value="SURFACE">SURFACE</option>
+              <option value="POSHOLD">POSHOLD</option>
+              <option value="GUIDED">GUIDED</option>
+            </select>
+          </label>
+
+          <div class="divider"></div>
+
+          <div class="pad-wrap">
+            <div id="pad" class="pad" aria-label="Thrust joystick">
+              <div class="pad-cross"></div>
+              <div id="pad-knob" class="pad-knob"></div>
+            </div>
+            <div class="pad-caption muted">Hold and drag to thrust · WASD / arrows · Q/E yaw</div>
+          </div>
+
+          <label class="vertical">
+            <span>Vertical <b id="z-value" class="mono">500</b></span>
+            <input id="vertical" type="range" min="0" max="1000" step="10" value="500" />
+            <small class="muted">0 = full down · 500 = neutral · 1000 = full up (R/F)</small>
+          </label>
+
+          <div class="divider"></div>
+
+          <div class="control-status">
+            <div><span class="muted">Command age</span> <span id="cmd-age" class="mono">—</span></div>
+            <div><span class="muted">Frames ok / dropped</span> <span id="frames" class="mono">—</span></div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="toasts" class="toasts" aria-live="polite"></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
