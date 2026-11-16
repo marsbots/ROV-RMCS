@@ -1,23 +1,26 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 .venv/
-*.egg-info/
+venv/
+.env
 
-# Data / logs
+# macOS / NAS
+.DS_Store
+._*
+*.json.bak
+
+# Session / audit data (runtime-generated)
 data/*.jsonl
-data/*.log
-*.jsonl
+data/audit.jsonl
+세션내용.json
 
-# Temp / build
+# Test / cache
 .pytest_cache/
 .ruff_cache/
 node_modules/
 dist/
-build/
 
-# Secrets
-.env
-*.key
-*.pem
+# Temp
+*.log
