@@ -148,3 +148,12 @@ cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)"
 - [docs/03-video.md](docs/03-video.md) — 영상(out-of-band)
 - [docs/04-deployment.md](docs/04-deployment.md) — 배포
 - [docs/05-licensing.md](docs/05-licensing.md) — 라이선스 메모
+
+## 라이브 배포 (2026-11-17 기준)
+
+- URL: https://rmcs.marsbot.kr/ (본사 맥미니, uvicorn :8080 + Caddy 리버스 프록시, TLS 종단)
+- LaunchAgent: `ai.openclaw.rmcs-server` (KeepAlive, 재부팅 자속)
+- 로그: `~/.openclaw/logs/rmcs-server.log` / `rmcs-server.err.log`
+- 기본 계정: admin/admin, demo/demo (환경변수 `ADMIN_USER`/`ADMIN_PASSWORD`/`DEMO_USER`/`DEMO_PASSWORD`로 교체 가능)
+- 헬스: `GET /healthz` — 차량 온라인 수·세션 수 반환
+- 차량 접속: 차량 측 agent가 서버로 아웃바운드 연결(`/ws/vehicle`) — 차량 미접속 시 `vehicles_online: 0`이 정상
