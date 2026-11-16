@@ -1,4 +1,4 @@
-# ROVOps
+# ROVOps — Remote Monitoring & Control System
 
 Remote teleoperation platform for tethered ROVs (ArduSub + BlueOS + Pixhawk/Raspberry Pi).
 
@@ -8,26 +8,62 @@ Remote teleoperation platform for tethered ROVs (ArduSub + BlueOS + Pixhawk/Rasp
 - **Vehicle agent** (`agent/`): Runs on the vehicle (BlueOS Extension). Opens an outbound connection to the server, bridges MAVLink to/from the flight controller, and enforces a local command watchdog/E-stop as a backstop.
 - **Protocol**: JSON control plane + binary MAVLink passthrough gated by a single-controller lease. Server enforces rate limits, command TTL, neutral bursts on timeout/disconnect/lease loss, and a latched E-stop.
 
-## Quick start (development)
+## Development environment (HQ macOS)
 
-```powershell
-# Server (from repo root)
-cd D:\1\rovops
-$env:JWT_SECRET = "change-me-at-least-32-characters-long"
-$env:VEHICLES_FILE = "server/config/vehicles.json"
-.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir server --reload --port 8080
+This project is developed on the HQ server (macOS, Apple Silicon).
+
+### Prerequisites
+
+- Python 3.11+ (tested with 3.14)
+- A local virtualenv (see below)
+
+### Setup
+
+```bash
+# Create venv on local disk (NOT on NAS/SMB — see note below)
+python3 -m venv ~/.venvs/rmcs
+~/.venvs/rmcs/bin/pip install -r server/requirements.txt
+~/.venvs/rmcs/bin/pip install -r server/requirements-dev.txt  # if present
 ```
 
-```powershell
-# Agent (on vehicle / SITL)
-cd D:\1\rovops\agent
-$env:SERVER_URL = "http://your-server:8080"
-$env:VEHICLE_TOKEN = "dev-device-token-rov-01"
-$env:MAVLINK_ENDPOINT = "udpin:0.0.0.0:14599"
-..\.venv\Scripts\python.exe -m rovops_agent.main
+### Run the server
+
+```bash
+cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)"
+export JWT_SECRET="change-me-at-least-32-characters-long"
+export VEHICLES_FILE="server/config/vehicles.json"
+~/.venvs/rmcs/bin/python -m uvicorn app.main:app --app-dir server --reload --port 8080
 ```
 
-Login: `demo/demo` or `admin/admin` (change before exposure). Provision device tokens in `server/config/vehicles.json` or via environment (`token_env`).
+### Run the agent (on vehicle / SITL)
+
+```bash
+cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)/agent"
+export SERVER_URL="http://localhost:8080"
+export VEHICLE_TOKEN="dev-device-token-rov-01"
+export MAVLINK_ENDPOINT="udpin:0.0.0.0:14599"
+~/.venvs/rmcs/bin/python -m rovops_agent.main
+```
+
+### Tests
+
+```bash
+cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)"
+~/.venvs/rmcs/bin/python -m pytest server/tests/ agent/tests/ -q
+```
+
+### End-to-end smoke test
+
+```bash
+cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)"
+~/.venvs/rmcs/bin/python scripts/e2e_smoke.py
+```
+
+## Storage note (important)
+
+- The project lives on an **SMB mount** (`/Volumes/DataHub`, `smbfs`). SMB on macOS is **not** `noexec` — binaries can run from it.
+- However, the `.venv` committed in this repo's history was created on **Windows** (`C:\Python313`, `D:\1\rovops\.venv`) and cannot run on macOS. **Do not use it.** Create a fresh venv on local disk (`~/.venvs/rmcs`) as shown above.
+- The WebDAV mount (`/Volumes/file.heo.best`) **is** `noexec` — do not place executables there.
 
 ## Safety
 
@@ -46,18 +82,14 @@ rovops/
     app/static/  # pilot UI
   agent/         # BlueOS Extension vehicle agent
     rovops_agent/ # config, mavlink bridge, websocket client
-  data/          # audit logs
+  data/          # audit logs (runtime-generated)
   docs/          # design notes
   scripts/       # helpers (fake_autopilot.py, e2e_smoke.py)
 ```
 
-## End-to-end smoke test
+## Login
 
-```powershell
-.venv\Scripts\python.exe scripts\e2e_smoke.py
-```
-
-Starts a real server, fake autopilot and agent, then drives a pilot session over the WebSocket API.
+`demo/demo` or `admin/admin` (change before exposure). Provision device tokens in `server/config/vehicles.json` or via environment (`token_env`).
 
 ## License / IP notes
 
