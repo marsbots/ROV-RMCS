@@ -1,5 +1,7 @@
 # ROVOps — Remote Monitoring & Control System
 
+> 한국어 문서: [README.ko.md](README.ko.md)
+
 Remote teleoperation platform for tethered ROVs (ArduSub + BlueOS + Pixhawk/Raspberry Pi).
 
 ## What this is
