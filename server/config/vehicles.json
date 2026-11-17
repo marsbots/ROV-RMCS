@@ -9,10 +9,9 @@
       "sysid": 1,
       "enabled": true,
       "token_env": "ROV_TOKEN_ROV_01",
-      "token": "dev-device-token-rov-01",
       "tags": ["tether", "blueos"],
       "meta": {
-        "notes": "Replace the development device token before deployment."
+        "notes": "Device token is provided via ROV_TOKEN_ROV_01; never commit plaintext tokens."
       }
     }
   ]

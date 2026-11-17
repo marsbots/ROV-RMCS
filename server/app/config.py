@@ -1,8 +1,10 @@
 """Runtime configuration for the ROVOps control server.
 
-All values can be overridden with environment variables.  The defaults are
-intentionally development-friendly; change JWT_SECRET and the demo credentials
-before exposing the server to a network.
+All values can be overridden with environment variables.
+
+``JWT_SECRET`` is mandatory: the server refuses to start without it.  Demo and
+admin credentials have no built-in defaults and must be provided via
+``DEMO_USER``/``DEMO_PASSWORD`` and ``ADMIN_USER``/``ADMIN_PASSWORD``.
 """
 
 from __future__ import annotations
@@ -14,8 +16,18 @@ from pathlib import Path
 from typing import Any
 
 
-def _env(name: str, default: str) -> str:
-    return os.environ.get(name, default)
+def _env(name: str, default: str | None = None) -> str:
+    value = os.environ.get(name)
+    if value is None:
+        return default if default is not None else ""
+    return value
+
+
+def _required_env(name: str) -> str:
+    value = os.environ.get(name, "").strip()
+    if not value:
+        raise RuntimeError(f"{name} environment variable is required")
+    return value
 
 
 def _env_int(name: str, default: int) -> int:
@@ -36,14 +48,14 @@ class Settings:
     host: str = field(default_factory=lambda: _env("HOST", "0.0.0.0"))
     port: int = field(default_factory=lambda: _env_int("PORT", 8080))
 
-    jwt_secret: str = field(default_factory=lambda: _env("JWT_SECRET", "dev-secret-change-me"))
+    jwt_secret: str = field(default_factory=lambda: _required_env("JWT_SECRET"))
     jwt_ttl_s: int = field(default_factory=lambda: _env_int("JWT_TTL_S", 3600))
     session_ttl_s: int = field(default_factory=lambda: _env_int("SESSION_TTL_S", 7200))
 
-    demo_user: str = field(default_factory=lambda: _env("DEMO_USER", "demo"))
-    demo_password: str = field(default_factory=lambda: _env("DEMO_PASSWORD", "demo"))
-    admin_user: str = field(default_factory=lambda: _env("ADMIN_USER", "admin"))
-    admin_password: str = field(default_factory=lambda: _env("ADMIN_PASSWORD", "admin"))
+    demo_user: str = field(default_factory=lambda: _env("DEMO_USER"))
+    demo_password: str = field(default_factory=lambda: _env("DEMO_PASSWORD"))
+    admin_user: str = field(default_factory=lambda: _env("ADMIN_USER"))
+    admin_password: str = field(default_factory=lambda: _env("ADMIN_PASSWORD"))
 
     vehicles_file: str = field(
         default_factory=lambda: _env("VEHICLES_FILE", str(_project_root() / "server" / "config" / "vehicles.json"))
@@ -63,7 +75,7 @@ class Settings:
     public_whep_base: str = field(default_factory=lambda: _env("PUBLIC_WHEP_BASE", ""))
     public_rtsp_base: str = field(default_factory=lambda: _env("PUBLIC_RTSP_BASE", ""))
 
-    cors_origins: str = field(default_factory=lambda: _env("CORS_ORIGINS", "*"))
+    cors_origins: str = field(default_factory=lambda: _env("CORS_ORIGINS", "https://rmcs.marsbot.kr"))
 
     # Server-side MAVLink identity used when encoding pilot commands.
     gcs_sysid: int = field(default_factory=lambda: _env_int("GCS_SYSID", 255))

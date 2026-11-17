@@ -6,7 +6,14 @@ import json
 import sys
 from pathlib import Path
 
+import os
 import pytest
+
+os.environ.setdefault("JWT_SECRET", "test-secret-that-is-long-enough-for-hs256")
+os.environ.setdefault("DEMO_USER", "demo")
+os.environ.setdefault("DEMO_PASSWORD", "demo")
+os.environ.setdefault("ADMIN_USER", "admin")
+os.environ.setdefault("ADMIN_PASSWORD", "admin")
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "server"))

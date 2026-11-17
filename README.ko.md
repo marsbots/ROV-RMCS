@@ -68,7 +68,7 @@ python3 -m venv ~/.venvs/rmcs
 ### 서버 실행
 ```bash
 cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)"
-export JWT_SECRET="change-me-at-least-32-characters-long"
+export JWT_SECRET="<long-random-secret>"
 export VEHICLES_FILE="server/config/vehicles.json"
 ~/.venvs/rmcs/bin/python -m uvicorn app.main:app --app-dir server --reload --port 8080
 ```
@@ -77,7 +77,7 @@ export VEHICLES_FILE="server/config/vehicles.json"
 ```bash
 cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)/agent"
 export SERVER_URL="http://localhost:8080"
-export VEHICLE_TOKEN="dev-device-token-rov-01"
+export VEHICLE_TOKEN="<provisioned-device-token>"
 export MAVLINK_ENDPOINT="udpin:0.0.0.0:14599"
 ~/.venvs/rmcs/bin/python -m rovops_agent.main
 ```
@@ -102,10 +102,10 @@ cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)"
 ### 1. 서버 준비 (맥미니/HQ)
 1. `.env`/환경변수 설정 (`.env.example` 참고)
    - `JWT_SECRET`: 충분히 긴 랜덤 값으로 교체
-   - `DEMO_USER/DEMO_PASSWORD`, `ADMIN_USER/ADMIN_PASSWORD`: 기본값(`demo/demo`, `admin/admin`) 교체
+   - `DEMO_USER/DEMO_PASSWORD`, `ADMIN_USER/ADMIN_PASSWORD`: 운영 계정으로 교체 (기본값 없음)
 2. `server/config/vehicles.json`에 실차량 등록
    - 고유 `id`, `sysid` 등 메타 정보 설정
-   - **개발용 토큰(`dev-device-token-rov-01`) 교체**: `token` 또는 `token_env`(예: `ROV_TOKEN_ROV_01`)로 실 토큰 주입
+   - **개발용 토큰 교체**: `token` 또는 `token_env`(예: `ROV_TOKEN_ROV_01`)로 실 토큰 주입
 3. 서버 실행 및 헬스 확인
    - `GET /healthz` 응답 확인
    - 로컬 확인: `http://<서버IP>:8080` (참고용 UI)
@@ -154,6 +154,6 @@ cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)"
 - URL: https://rmcs.marsbot.kr/ (본사 맥미니, uvicorn :8080 + Caddy 리버스 프록시, TLS 종단)
 - LaunchAgent: `ai.openclaw.rmcs-server` (KeepAlive, 재부팅 자속)
 - 로그: `~/.openclaw/logs/rmcs-server.log` / `rmcs-server.err.log`
-- 기본 계정: admin/admin, demo/demo (환경변수 `ADMIN_USER`/`ADMIN_PASSWORD`/`DEMO_USER`/`DEMO_PASSWORD`로 교체 가능)
+- 기본 계정 없음: `ADMIN_USER`/`ADMIN_PASSWORD`/`DEMO_USER`/`DEMO_PASSWORD` 환경변수로 설정
 - 헬스: `GET /healthz` — 차량 온라인 수·세션 수 반환
 - 차량 접속: 차량 측 agent가 서버로 아웃바운드 연결(`/ws/vehicle`) — 차량 미접속 시 `vehicles_online: 0`이 정상

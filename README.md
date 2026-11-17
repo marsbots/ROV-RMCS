@@ -32,7 +32,7 @@ python3 -m venv ~/.venvs/rmcs
 
 ```bash
 cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)"
-export JWT_SECRET="change-me-at-least-32-characters-long"
+export JWT_SECRET="<long-random-secret>"
 export VEHICLES_FILE="server/config/vehicles.json"
 ~/.venvs/rmcs/bin/python -m uvicorn app.main:app --app-dir server --reload --port 8080
 ```
@@ -42,7 +42,7 @@ export VEHICLES_FILE="server/config/vehicles.json"
 ```bash
 cd "/Volumes/DataHub/Mars/Mutec/RMCS (Remote Monitoring and Control System)/agent"
 export SERVER_URL="http://localhost:8080"
-export VEHICLE_TOKEN="dev-device-token-rov-01"
+export VEHICLE_TOKEN="<provisioned-device-token>"
 export MAVLINK_ENDPOINT="udpin:0.0.0.0:14599"
 ~/.venvs/rmcs/bin/python -m rovops_agent.main
 ```
@@ -91,7 +91,7 @@ rovops/
 
 ## Login
 
-`demo/demo` or `admin/admin` (change before exposure). Provision device tokens in `server/config/vehicles.json` or via environment (`token_env`).
+`DEMO_USER/DEMO_PASSWORD`, `ADMIN_USER/ADMIN_PASSWORD` (no built-in defaults). Provision device tokens in `server/config/vehicles.json` or via environment (`token_env`).
 
 ## License / IP notes
 

@@ -8,7 +8,7 @@ a local command watchdog and latched E-stop as a backstop.
 ```powershell
 cd D:\1\rovops\agent
 $env:SERVER_URL = "http://127.0.0.1:8080"
-$env:VEHICLE_TOKEN = "dev-device-token-rov-01"
+$env:VEHICLE_TOKEN = "<provisioned-device-token>"
 $env:MAVLINK_ENDPOINT = "udpin:0.0.0.0:14599"
 ..\.venv\Scripts\python.exe -m rovops_agent.main
 ```

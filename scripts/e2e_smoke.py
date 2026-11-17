@@ -488,6 +488,10 @@ async def main(args: argparse.Namespace) -> int:
         env=child_env(
             base_env,
             JWT_SECRET="e2e-secret-that-is-long-enough-for-hs256",
+            DEMO_USER="demo",
+            DEMO_PASSWORD="demo",
+            ADMIN_USER="admin",
+            ADMIN_PASSWORD="admin",
             VEHICLES_FILE=str(vehicles_file),
             AUDIT_FILE=str(audit_file),
             COMMAND_TTL_MS=300,
