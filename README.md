@@ -96,3 +96,24 @@ rovops/
 ## License / IP notes
 
 If you expose Cockpit as a network service or fork it, **AGPL** implications may apply. This broker is designed to integrate with existing GCS flows without bundling a heavy GPL UI by default.
+
+## Verification scripts
+
+| Script | Purpose |
+|---|---|
+| `scripts/e2e_smoke.py` | Safety smoke test against a fake autopilot (lease/E-stop/neutral/audit). |
+| `scripts/fake_autopilot.py` | Minimal ArduSub stand-in used by the smoke tests and by Remote Mode scenario runs. |
+| `scripts/remote_mode_scenarios.py` | MARSUB Remote Mode acceptance scenarios 1–10, 12 from `docs/REMOTE_MODE.md` §7.2, driven exactly as `RmcsRemoteLink` drives them. Can run without ArduSub SITL. |
+| `scripts/rotate_audit_logs.py` | Audit log rotation/archival per `docs/api-contract.md` §12 (daily or 100 MB, order-preserving gzip archives, retention pruning). |
+| `scripts/check_production_readiness.py` | Production readiness report: launchd service, injected env (lengths only), vehicles/`token_env`, CORS, TLS, WSS auth, audit log. |
+
+```bash
+python scripts/remote_mode_scenarios.py --list   # scenario matrix
+python scripts/remote_mode_scenarios.py          # run automated scenarios
+python scripts/rotate_audit_logs.py --status     # audit log state
+python scripts/check_production_readiness.py     # production readiness
+```
+
+> Scenario 11 (Local ↔ Remote switching in the MARSUB UI) is covered by the
+> `link-manager` / `local-mode-regression` vitest suites in the MARSUB repo, and
+> scenario 13 (WHEP video) needs video hardware.
