@@ -258,7 +258,9 @@ async def run_smoke(
         pilot_url = f"{http_url.replace('http', 'ws', 1)}{session['ws_url']}?token={session['token']}"
         say(f"session {session['session_id']} created")
 
-        async with websockets.connect(pilot_url, max_size=None) as pilot:
+        # proxy=None: never route the local pilot link through an ambient
+        # HTTP(S)_PROXY (websockets >= 14 discovers them by default).
+        async with websockets.connect(pilot_url, max_size=None, proxy=None) as pilot:
             initial = await recv_type(pilot, "session_state")
             if initial["session"]["session_id"] != session["session_id"]:
                 raise SmokeError("pilot joined the wrong session")

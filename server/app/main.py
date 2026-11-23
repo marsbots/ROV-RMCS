@@ -498,6 +498,12 @@ async def _handle_pilot_bytes(app: FastAPI, session: Session, pilot: PilotConn, 
     server can validate ranges and audit intent.
     """
 
+    # Distinguish "E-stop latched" from "no lease": raw bytes must never reach
+    # the vehicle while the E-stop is latched, and the client needs the real
+    # reason to react (clear the latch instead of grabbing the lease).
+    if session.estop:
+        await _send_error(pilot, "estop_active", "emergency stop is latched")
+        return
     if not app.state.sessions.can_command(session, pilot):
         await _send_error(pilot, "no_lease", "raw MAVLink requires the control lease")
         return

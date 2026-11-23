@@ -102,6 +102,7 @@ Same item shape as above (single object). `404` if unknown.
 
 ---
 
+
 ## 3. Sessions
 
 ### POST /api/sessions
@@ -460,5 +461,27 @@ A neutral burst (MANUAL_CONTROL with x=y=r=0, z=500) is sent when:
 See `.env.example`. Required: `JWT_SECRET`. User credentials
 (`DEMO_USER`/`DEMO_PASSWORD`/`ADMIN_USER`/`ADMIN_PASSWORD`) have no defaults.
 Device tokens are referenced via `token_env` in `vehicles.json`.
-EOF
-echo written
+
+`PUBLIC_WS_BASE` — absolute WebSocket base URL advertised to pilots.
+When set, `POST /api/sessions` returns `ws_url` as
+`${PUBLIC_WS_BASE}/ws/pilot/{session_id}` (e.g. `wss://rmcs.marsbot.kr`);
+otherwise the relative path `/ws/pilot/{session_id}` is returned. Clients
+(MARSUB Remote Mode) must join a relative `ws_url` with the server base URL.
+Behind a TLS terminator set `PUBLIC_WS_BASE=wss://<host>`.
+
+## 12. Audit log retention policy
+
+- Source of truth: append-only JSONL at `AUDIT_FILE` (default `data/audit.jsonl`);
+  records are also kept in a bounded in-memory ring for recent queries.
+- **Minimum retention (production):** keep audit logs for at least 90 days online
+  and 1 year in durable/archive storage (or per applicable safety/regulatory
+  policy if stricter). Do not delete or rewrite log lines in place.
+- **Rotation/archival:** rotate by day or size (recommended: daily or >=100 MB)
+  with compressed archives (e.g. `audit.YYYY-MM-DD.jsonl.gz`), preserve ordering,
+  and ship copies to tamper-evident durable storage (S3/object lock, WORM, or
+  centralized log backend) outside the host.
+- **Access/control:** restrict read access to authorized operators/admins; treat
+  logs as sensitive operational data. Monitor ingest/ship failures and alert.
+- **Verification:** `GET /api/audit` (admin) and
+  `GET /api/sessions/{session_id}/audit` expose recent records; long-term review
+  must use the archived/shipped copies.

@@ -58,11 +58,32 @@ class AgentConfig:
     video_whep_url: str = field(default_factory=lambda: _env("VIDEO_WHEP_URL", ""))
     video_rtsp_url: str = field(default_factory=lambda: _env("VIDEO_RTSP_URL", ""))
 
+    # Outbound HTTP proxy for the control-plane WebSocket.
+    # ``websockets`` >= 14 discovers HTTP_PROXY/HTTPS_PROXY from the environment
+    # by default, which breaks loopback deployments on hosts that run an egress
+    # proxy.  The control link is a point-to-point connection to the RMCS server,
+    # so a proxy is opt-in: empty (default) = no proxy, ``auto`` = environment
+    # discovery, any other value = that proxy URL.
+    ws_proxy_raw: str = field(default_factory=lambda: _env("AGENT_WS_PROXY", ""))
+
     # Reconnect behaviour
     reconnect_min_s: float = field(default_factory=lambda: _env_float("RECONNECT_MIN_S", 1.0))
     reconnect_max_s: float = field(default_factory=lambda: _env_float("RECONNECT_MAX_S", 20.0))
 
     agent_id: str = field(default_factory=lambda: _env("AGENT_ID", uuid.uuid4().hex[:12]))
+
+    @property
+    def ws_proxy(self) -> str | bool | None:
+        """Value for ``websockets.connect(proxy=...)``.
+
+        ``None`` disables proxy use, ``True`` enables environment discovery.
+        """
+        raw = (self.ws_proxy_raw or "").strip()
+        if not raw:
+            return None
+        if raw.lower() in {"auto", "env", "1", "true"}:
+            return True
+        return raw
 
     @property
     def ws_url(self) -> str:

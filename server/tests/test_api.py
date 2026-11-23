@@ -96,3 +96,25 @@ def test_device_token_is_not_exposed(client: TestClient) -> None:
     serialized = response.text
     assert DEVICE_TOKEN not in serialized
     assert "token" not in response.json()["vehicles"][0]
+
+
+def test_session_ws_url_is_relative_by_default(client: TestClient) -> None:
+    token = login(client)["token"]
+    session = create_session(client, token)
+    assert session["ws_url"] == f"/ws/pilot/{session['session_id']}"
+
+
+def test_session_ws_url_uses_public_ws_base(settings) -> None:
+    """PUBLIC_WS_BASE is advertised verbatim, with a single slash between parts."""
+    import dataclasses
+
+    from fastapi.testclient import TestClient
+
+    from app.main import create_app
+
+    for base in ("wss://rmcs.marsbot.kr", "wss://rmcs.marsbot.kr/"):
+        app = create_app(dataclasses.replace(settings, public_ws_base=base))
+        with TestClient(app) as client:
+            token = login(client)["token"]
+            session = create_session(client, token)
+            assert session["ws_url"] == f"wss://rmcs.marsbot.kr/ws/pilot/{session['session_id']}"

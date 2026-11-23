@@ -54,6 +54,9 @@ class AgentClient:
                     ping_interval=20,
                     ping_timeout=20,
                     max_size=None,
+                    # Never inherit HTTP(S)_PROXY unless explicitly configured;
+                    # see AgentConfig.ws_proxy.
+                    proxy=self.config.ws_proxy,
                 ) as ws:
                     self._connected = True
                     self._connected_since = time.time()
